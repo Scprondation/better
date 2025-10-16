@@ -3,9 +3,658 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Холодильник</title>
+    <title>Холодильник • Firebase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="main.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #262626;
+            --bg-elevated: #333333;
+            --accent-primary: #4a7cff;
+            --accent-secondary: #6d9bff;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-tertiary: #808080;
+            --success: #2dcc70;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --background-image: none;
+            --background-blur: 0px;
+            --background-brightness: 100%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding-bottom: 80px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--background-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(var(--background-blur)) brightness(var(--background-brightness));
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(26, 26, 26, 0.8);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .settings-btn {
+            background: var(--bg-tertiary);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .settings-btn:hover {
+            background: var(--accent-primary);
+            transform: rotate(30deg);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100vh;
+            background: var(--bg-elevated);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            transition: var(--transition);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .settings-panel.active {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .close-settings:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .color-option.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .custom-color {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .custom-color-input {
+            flex: 1;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            padding: 0 10px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .background-upload {
+            margin-top: 16px;
+        }
+
+        .upload-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .upload-btn:hover {
+            background: var(--accent-primary);
+        }
+
+        .background-preview {
+            margin-top: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 150px;
+            display: none;
+        }
+
+        .background-preview img, .background-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slider-container {
+            margin-top: 16px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        /* Add Product Form */
+        .add-product-section {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--accent-primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        input, button, select {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input, select {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid transparent;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(74, 124, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(74, 124, 255, 0.3);
+        }
+
+        .image-preview-container {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: var(--radius-sm);
+            display: none;
+        }
+
+        /* Products Grid */
+        .products-section {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-image {
+            height: 160px;
+            width: 100%;
+            object-fit: cover;
+            background: var(--bg-secondary);
+        }
+
+        .product-info {
+            padding: 16px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-category {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+        }
+
+        .product-quantity {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quantity-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quantity-btn:hover {
+            background: var(--accent-primary);
+        }
+
+        .quantity-value {
+            font-size: 18px;
+            font-weight: 700;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .product-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .stats-card, .quick-actions {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            background: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            font-size: 20px;
+            color: var(--accent-primary);
+        }
+
+        .action-btn:hover .action-icon {
+            color: white;
+        }
+
+        .action-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                grid-row: 1;
+            }
+            
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -17,23 +666,11 @@
                     </div>
                     <div class="logo-text">Холодильник</div>
                 </div>
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalProducts">0</div>
-                        <div class="stat-label">Продуктов</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="totalQuantity">0</div>
-                        <div class="stat-label">Всего шт.</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="lowStock">0</div>
-                        <div class="stat-label">Заканчивается</div>
-                    </div>
+                <div class="header-actions">
+                    <button class="settings-btn" id="settingsToggle">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
-                <button class="settings-btn" id="settingsToggle">
-                    <i class="fas fa-cog"></i>
-                </button>
             </div>
         </div>
     </header>
@@ -90,31 +727,12 @@
                 <i class="fas fa-times"></i> Сбросить фон
             </button>
         </div>
-        
-        <div class="settings-group">
-            <h3 class="settings-label">Инструкция по хостингу</h3>
-            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5;">
-                Чтобы другие пользователи в вашей сети могли зайти на сайт:
-                <br><br>
-                1. Узнайте IP-адрес вашего компьютера в сети
-                <br>
-                2. Запустите сайт с помощью локального сервера
-                <br>
-                3. Другие пользователи откройте в браузере:
-                <br>
-                <strong>http://[ВАШ_IP]:8000</strong>
-                <br><br>
-                <button class="upload-btn" id="showHostingHelp">
-                    <i class="fas fa-info-circle"></i> Подробная инструкция
-                </button>
-            </p>
-        </div>
     </div>
 
     <div class="container">
         <div class="main-content">
             <div class="content-main">
-                <section class="add-product-section fade-in">
+                <section class="add-product-section">
                     <h2 class="section-title"><i class="fas fa-plus-circle"></i> Добавить продукт</h2>
                     <form id="productForm">
                         <div class="form-grid">
@@ -127,10 +745,24 @@
                                 <label for="productQuantity">Количество</label>
                                 <input type="number" id="productQuantity" value="1" min="1" required>
                             </div>
+
+                            <div class="form-group">
+                                <label for="productCategory">Категория</label>
+                                <select id="productCategory">
+                                    <option value="Молочные продукты">Молочные продукты</option>
+                                    <option value="Овощи">Овощи</option>
+                                    <option value="Фрукты">Фрукты</option>
+                                    <option value="Мясо">Мясо</option>
+                                    <option value="Напитки">Напитки</option>
+                                    <option value="Бакалея">Бакалея</option>
+                                    <option value="Заморозка">Заморозка</option>
+                                    <option value="Другое">Другое</option>
+                                </select>
+                            </div>
                             
                             <div class="form-group full-width">
-                                <label for="productImage">Изображение продукта</label>
-                                <input type="file" id="productImage" accept="image/*">
+                                <label for="productImage">Изображение продукта (URL)</label>
+                                <input type="text" id="productImage" placeholder="https://example.com/image.jpg">
                                 <div class="image-preview-container">
                                     <img id="imagePreview" class="image-preview" src="" alt="Предпросмотр">
                                 </div>
@@ -143,16 +775,20 @@
                     </form>
                 </section>
                 
-                <section class="products-section fade-in">
+                <section class="products-section">
                     <h2 class="section-title"><i class="fas fa-boxes"></i> Мои продукты</h2>
                     <div class="products-grid" id="productsGrid">
-                        <!-- Продукты будут добавляться сюда -->
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>Холодильник пуст</h3>
+                            <p>Добавьте продукты, используя форму выше</p>
+                        </div>
                     </div>
                 </section>
             </div>
             
             <div class="sidebar">
-                <div class="stats-card fade-in">
+                <div class="stats-card">
                     <h2 class="section-title"><i class="fas fa-chart-pie"></i> Статистика</h2>
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -174,59 +810,299 @@
                     </div>
                 </div>
                 
-                <div class="quick-actions fade-in">
+                <div class="quick-actions">
                     <h2 class="section-title"><i class="fas fa-bolt"></i> Быстрые действия</h2>
                     <div class="quick-actions-grid">
-                        <div class="action-btn" onclick="addQuickProduct('Молоко')">
+                        <div class="action-btn" onclick="addQuickProduct('Молоко', 'Молочные продукты')">
                             <i class="fas fa-wine-bottle action-icon"></i>
                             <div class="action-label">Молоко</div>
                         </div>
-                        <div class="action-btn" onclick="addQuickProduct('Яйца')">
+                        <div class="action-btn" onclick="addQuickProduct('Яйца', 'Молочные продукты')">
                             <i class="fas fa-egg action-icon"></i>
                             <div class="action-label">Яйца</div>
                         </div>
-                        <div class="action-btn" onclick="addQuickProduct('Хлеб')">
+                        <div class="action-btn" onclick="addQuickProduct('Хлеб', 'Бакалея')">
                             <i class="fas fa-bread-slice action-icon"></i>
                             <div class="action-label">Хлеб</div>
                         </div>
-                        <div class="action-btn" onclick="addQuickProduct('Сыр')">
+                        <div class="action-btn" onclick="addQuickProduct('Сыр', 'Молочные продукты')">
                             <i class="fas fa-cheese action-icon"></i>
                             <div class="action-label">Сыр</div>
                         </div>
                     </div>
+                </div>
+
+                <div class="stats-card">
+                    <h2 class="section-title"><i class="fas fa-info-circle"></i> Информация</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5;">
+                        ✅ Все данные сохраняются в Firebase<br>
+                        📱 Работает на любом устройстве<br>
+                        🌐 Не требует локального сервера<br>
+                        🔒 Ваши данные защищены
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        Загрузка пользовательских настроек при загрузке страницы
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA76jwEr58uyWGTkI-IcZ6LG_A2EGgLbk4",
+            authDomain: "scphold-bc4ee.firebaseapp.com",
+            projectId: "scphold-bc4ee",
+            storageBucket: "scphold-bc4ee.firebasestorage.app",
+            messagingSenderId: "840581760493",
+            appId: "1:840581760493:web:c0e72e423e0392ed02d3e4",
+            measurementId: "G-CWL04PQZ3Y"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Автоматический анонимный вход
+        auth.signInAnonymously()
+            .then(() => {
+                console.log("✅ Авторизован анонимно");
+                loadProducts();
+            })
+            .catch(error => {
+                console.error("❌ Ошибка авторизации:", error);
+            });
+
+        // Загрузка продуктов
+        function loadProducts() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            console.log("🔄 Загрузка продуктов для пользователя:", user.uid);
+
+            db.collection("products")
+                .where("userId", "==", user.uid)
+                .orderBy("createdAt", "desc")
+                .onSnapshot((snapshot) => {
+                    console.log("📦 Получены данные:", snapshot.size, "продуктов");
+                    
+                    const productsGrid = document.getElementById('productsGrid');
+                    const products = [];
+
+                    if (snapshot.empty) {
+                        console.log("📭 Холодильник пуст");
+                        productsGrid.innerHTML = `
+                            <div class="empty-state" style="grid-column: 1 / -1;">
+                                <i class="fas fa-inbox"></i>
+                                <h3>Холодильник пуст</h3>
+                                <p>Добавьте продукты, используя форму выше</p>
+                            </div>
+                        `;
+                        updateStats([]);
+                        return;
+                    }
+
+                    productsGrid.innerHTML = '';
+                    
+                    snapshot.forEach(doc => {
+                        const product = { 
+                            id: doc.id, 
+                            ...doc.data(),
+                            // Добавляем fallback для даты
+                            createdAt: doc.data().createdAt || new Date()
+                        };
+                        products.push(product);
+                        addProductToGrid(product);
+                    });
+
+                    console.log("✅ Продукты отображены:", products.length);
+                    updateStats(products);
+                }, (error) => {
+                    console.error("❌ Ошибка загрузки:", error);
+                    showMessage("❌ Ошибка загрузки продуктов", "error");
+                });
+        }
+
+        function addProductToGrid(product) {
+            const productsGrid = document.getElementById('productsGrid');
+            
+            // Убираем сообщение о пустом холодильнике
+            const emptyState = productsGrid.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card';
+            productCard.innerHTML = `
+                ${product.imageUrl ? 
+                    `<img src="${product.imageUrl}" class="product-image" alt="${product.name}" onerror="this.style.display='none'">` : 
+                    `<div class="product-image" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #333, #444);">
+                        <i class="fas fa-image" style="font-size: 48px; color: #666;"></i>
+                    </div>`
+                }
+                <div class="product-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-category">${product.category}</div>
+                    <div class="product-quantity">
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="changeQuantity('${product.id}', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="quantity-value">${product.quantity}</span>
+                            <button class="quantity-btn" onclick="changeQuantity('${product.id}', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="product-actions">
+                            <button class="delete-btn" onclick="deleteProduct('${product.id}')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            productsGrid.appendChild(productCard);
+        }
+
+        // Обработка формы
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addProduct();
+        });
+
+        document.getElementById('productImage').addEventListener('input', function(e) {
+            const url = this.value.trim();
+            const preview = document.getElementById('imagePreview');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        function addProduct() {
+            const user = auth.currentUser;
+            if (!user) {
+                showMessage("❌ Ошибка авторизации", "error");
+                return;
+            }
+
+            const name = document.getElementById('productName').value.trim();
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+            const category = document.getElementById('productCategory').value;
+            const imageUrl = document.getElementById('productImage').value.trim();
+
+            if (!name) {
+                showMessage("❌ Введите название продукта", "error");
+                return;
+            }
+
+            const product = {
+                name: name,
+                quantity: quantity,
+                category: category,
+                imageUrl: imageUrl,
+                userId: user.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            console.log("➕ Добавление продукта:", product);
+
+            db.collection("products").add(product)
+                .then(() => {
+                    showMessage("✅ Продукт добавлен!", "success");
+                    document.getElementById('productForm').reset();
+                    document.getElementById('imagePreview').style.display = 'none';
+                })
+                .catch((error) => {
+                    console.error("❌ Ошибка добавления:", error);
+                    showMessage("❌ Ошибка: " + error.message, "error");
+                });
+        }
+
+        function addQuickProduct(name, category) {
+            document.getElementById('productName').value = name;
+            document.getElementById('productCategory').value = category;
+            document.getElementById('productQuantity').value = 1;
+            document.getElementById('productImage').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('productName').focus();
+        }
+
+        function changeQuantity(productId, change) {
+            const productRef = db.collection("products").doc(productId);
+            
+            db.runTransaction((transaction) => {
+                return transaction.get(productRef).then((doc) => {
+                    if (!doc.exists) {
+                        throw new Error("Продукт не найден");
+                    }
+                    
+                    const newQuantity = doc.data().quantity + change;
+                    if (newQuantity <= 0) {
+                        transaction.delete(productRef);
+                    } else {
+                        transaction.update(productRef, { quantity: newQuantity });
+                    }
+                });
+            }).catch((error) => {
+                showMessage("❌ Ошибка: " + error.message, "error");
+            });
+        }
+
+        function deleteProduct(productId) {
+            if (confirm("Вы уверены, что хотите удалить этот продукт?")) {
+                db.collection("products").doc(productId).delete()
+                    .then(() => showMessage("✅ Продукт удален", "success"))
+                    .catch(error => showMessage("❌ Ошибка: " + error.message, "error"));
+            }
+        }
+
+        function updateStats(products) {
+            document.getElementById('cardTotal').textContent = products.length;
+            
+            const lowStockCount = products.filter(p => p.quantity < 3).length;
+            document.getElementById('cardLow').textContent = lowStockCount;
+            
+            const categories = [...new Set(products.map(p => p.category))].length;
+            document.getElementById('cardCategories').textContent = categories;
+            
+            const today = new Date().toISOString().split('T')[0];
+            const addedToday = products.filter(p => {
+                const productDate = p.createdAt ? 
+                    (p.createdAt.toDate ? p.createdAt.toDate().toISOString().split('T')[0] : today) : today;
+                return productDate === today;
+            }).length;
+            document.getElementById('cardAdded').textContent = addedToday;
+        }
+
+        function showMessage(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 1000;
+                background: ${type === 'success' ? '#2dcc70' : '#e74c3c'};
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Кастомизация
         document.addEventListener('DOMContentLoaded', function() {
             loadUserSettings();
-            loadProducts();
-            updateStats();
             
-             Обработчик формы добавления продукта
-            document.getElementById('productForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                addProduct();
-            });
-            
-             Предпросмотр изображения продукта
-            document.getElementById('productImage').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const preview = document.getElementById('imagePreview');
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-             Настройки панели
+            // Настройки панели
             document.getElementById('settingsToggle').addEventListener('click', function() {
                 document.getElementById('settingsPanel').classList.add('active');
             });
@@ -235,10 +1111,10 @@
                 document.getElementById('settingsPanel').classList.remove('active');
             });
             
-             Выбор цвета
-            document.querySelectorAll('.color-option').forEach(option = {
+            // Выбор цвета
+            document.querySelectorAll('.color-option').forEach(option => {
                 option.addEventListener('click', function() {
-                    document.querySelectorAll('.color-option').forEach(opt = {
+                    document.querySelectorAll('.color-option').forEach(opt => {
                         opt.classList.remove('active');
                     });
                     this.classList.add('active');
@@ -249,14 +1125,14 @@
                 });
             });
             
-             Пользовательский выбор цвета
+            // Пользовательский выбор цвета
             document.getElementById('customColor').addEventListener('input', function() {
                 const color = this.value;
                 applyColorScheme(color);
                 saveUserSettings();
             });
             
-             Загрузка фона
+            // Загрузка фона
             document.getElementById('uploadBackgroundBtn').addEventListener('click', function() {
                 document.getElementById('backgroundUpload').click();
             });
@@ -269,18 +1145,18 @@
                         const preview = document.getElementById('backgroundPreview');
                         const url = e.target.result;
                         
-                        if (file.type.startsWith('image')) {
-                            preview.innerHTML = `img src=${url} alt=Background Preview`;
-                        } else if (file.type.startsWith('video')) {
-                            preview.innerHTML = `video autoplay muted loopsource src=${url} type=${file.type}video`;
+                        if (file.type.startsWith('image/')) {
+                            preview.innerHTML = `<img src="${url}" alt="Background Preview">`;
+                        } else if (file.type.startsWith('video/')) {
+                            preview.innerHTML = `<video autoplay muted loop><source src="${url}" type="${file.type}"></video>`;
                         }
                         
                         preview.style.display = 'block';
                         
-                         Сохраняем фон в настройках
+                        // Сохраняем фон в настройках
                         const settings = getUserSettings();
                         settings.background = url;
-                        settings.backgroundType = file.type.startsWith('video')  'video'  'image';
+                        settings.backgroundType = file.type.startsWith('video/') ? 'video' : 'image';
                         localStorage.setItem('userSettings', JSON.stringify(settings));
                         
                         applyUserSettings(settings);
@@ -289,7 +1165,7 @@
                 }
             });
             
-             Слайдеры
+            // Слайдеры
             document.getElementById('blurSlider').addEventListener('input', function() {
                 const value = this.value + 'px';
                 document.getElementById('blurValue').textContent = value;
@@ -310,7 +1186,7 @@
                 localStorage.setItem('userSettings', JSON.stringify(settings));
             });
             
-             Сброс фона
+            // Сброс фона
             document.getElementById('resetBackground').addEventListener('click', function() {
                 const settings = getUserSettings();
                 settings.background = '';
@@ -321,42 +1197,23 @@
                 document.getElementById('backgroundPreview').innerHTML = '';
                 document.documentElement.style.setProperty('--background-image', 'none');
             });
-            
-             Помощь по хостингу
-            document.getElementById('showHostingHelp').addEventListener('click', function() {
-                alert(`ПОДРОБНАЯ ИНСТРУКЦИЯ ПО ХОСТИНГУ В ЛОКАЛЬНОЙ СЕТИ
-
-1. Узнайте IP-адрес вашего компьютера
-   - Windows откройте командную строку и введите ipconfig
-   - MacLinux откройте терминал и введите ifconfig
-
-2. Запустите локальный сервер
-   - Установите Python, затем в папке с сайтом выполните 
-     python -m http.server 8000
-   - Или используйте расширение для браузера Web Server for Chrome
-
-3. Другие пользователи в вашей сети откройте в браузере
-   http[ВАШ_IP]8000
-
-Например, если ваш IP 192.168.1.5, то адрес будет http192.168.1.58000`);
-            });
         });
-        
-         Функции для работы с настройками пользователя
+
+        // Функции для работы с настройками пользователя
         function getUserSettings() {
-            return JSON.parse(localStorage.getItem('userSettings'))  {};
+            return JSON.parse(localStorage.getItem('userSettings')) || {};
         }
         
         function saveUserSettings() {
             const settings = getUserSettings();
             
-             Сохраняем текущий цвет
+            // Сохраняем текущий цвет
             const activeColor = document.querySelector('.color-option.active');
             if (activeColor) {
                 settings.color = activeColor.getAttribute('data-color');
             }
             
-             Сохраняем пользовательский цвет
+            // Сохраняем пользовательский цвет
             const customColor = document.getElementById('customColor').value;
             if (customColor && customColor !== '#000000') {
                 settings.customColor = customColor;
@@ -371,12 +1228,12 @@
         }
         
         function applyUserSettings(settings) {
-             Применяем цветовую схему
+            // Применяем цветовую схему
             if (settings.color) {
                 applyColorScheme(settings.color);
                 
-                 Активируем соответствующую кнопку цвета
-                document.querySelectorAll('.color-option').forEach(option = {
+                // Активируем соответствующую кнопку цвета
+                document.querySelectorAll('.color-option').forEach(option => {
                     if (option.getAttribute('data-color') === settings.color) {
                         option.classList.add('active');
                     } else {
@@ -388,20 +1245,20 @@
                 document.getElementById('customColor').value = settings.customColor;
             }
             
-             Применяем фон
+            // Применяем фон
             if (settings.background) {
                 document.documentElement.style.setProperty('--background-image', `url(${settings.background})`);
                 
                 const preview = document.getElementById('backgroundPreview');
                 if (settings.backgroundType === 'video') {
-                    preview.innerHTML = `video autoplay muted loopsource src=${settings.background}video`;
+                    preview.innerHTML = `<video autoplay muted loop><source src="${settings.background}"></video>`;
                 } else {
-                    preview.innerHTML = `img src=${settings.background} alt=Background Preview`;
+                    preview.innerHTML = `<img src="${settings.background}" alt="Background Preview">`;
                 }
                 preview.style.display = 'block';
             }
             
-             Применяем настройки размытия и яркости
+            // Применяем настройки размытия и яркости
             if (settings.backgroundBlur) {
                 document.documentElement.style.setProperty('--background-blur', settings.backgroundBlur);
                 document.getElementById('blurSlider').value = parseInt(settings.backgroundBlur);
@@ -418,7 +1275,7 @@
         function applyColorScheme(color) {
             document.documentElement.style.setProperty('--accent-primary', color);
             
-             Создаем более светлый оттенок для вторичного акцента
+            // Создаем более светлый оттенок для вторичного акцента
             const hex = color.replace('#', '');
             const r = parseInt(hex.substr(0, 2), 16);
             const g = parseInt(hex.substr(2, 2), 16);
@@ -432,219 +1289,6 @@
             
             document.documentElement.style.setProperty('--accent-secondary', lighterColor);
         }
-        
-         Остальные функции для работы с продуктами (из предыдущего кода)
-        function loadProducts() {
-            const products = JSON.parse(localStorage.getItem('fridgeProducts'))  [];
-            const productsGrid = document.getElementById('productsGrid');
-            
-            productsGrid.innerHTML = '';
-            
-            if (products.length === 0) {
-                productsGrid.innerHTML = `
-                    div class=empty-state style=grid-column 1  -1;
-                        i class=fas fa-inboxi
-                        h3Холодильник пустh3
-                        pДобавьте продукты, используя форму вышеp
-                    div
-                `;
-                return;
-            }
-            
-            products.forEach(product = {
-                addProductToGrid(product);
-            });
-            
-            updateStats();
-        }
-        
-        function addProduct() {
-            const nameInput = document.getElementById('productName');
-            const quantityInput = document.getElementById('productQuantity');
-            const imageInput = document.getElementById('productImage');
-            
-            const name = nameInput.value.trim();
-            const quantity = parseInt(quantityInput.value);
-            
-            if (!name) {
-                alert('Пожалуйста, введите название продукта');
-                return;
-            }
-            
-            let imageData = '';
-            if (imageInput.files.length  0) {
-                const file = imageInput.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    imageData = e.target.result;
-                    saveProduct(name, quantity, imageData);
-                };
-                
-                reader.readAsDataURL(file);
-            } else {
-                saveProduct(name, quantity, imageData);
-            }
-        }
-        
-        function addQuickProduct(name) {
-            document.getElementById('productName').value = name;
-            document.getElementById('productQuantity').value = 1;
-            document.getElementById('productImage').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            
-             Фокусируемся на поле названия для быстрого редактирования
-            document.getElementById('productName').focus();
-        }
-        
-        function saveProduct(name, quantity, imageData) {
-            const products = JSON.parse(localStorage.getItem('fridgeProducts'))  [];
-            
-             Проверяем, существует ли уже продукт с таким именем
-            const existingProductIndex = products.findIndex(p = p.name === name);
-            
-            if (existingProductIndex !== -1) {
-                 Если продукт уже существует, увеличиваем его количество
-                products[existingProductIndex].quantity += quantity;
-            } else {
-                 Иначе создаем новый продукт
-                const product = {
-                    id Date.now(),
-                    name name,
-                    quantity quantity,
-                    image imageData,
-                    dateAdded new Date().toISOString()
-                };
-                products.push(product);
-            }
-            
-             Сохраняем в localStorage
-            localStorage.setItem('fridgeProducts', JSON.stringify(products));
-            
-             Перезагружаем список продуктов
-            loadProducts();
-            
-             Очищаем форму
-            document.getElementById('productForm').reset();
-            document.getElementById('imagePreview').style.display = 'none';
-            
-             Показываем анимацию успешного добавления
-            showSuccessAnimation();
-        }
-        
-        function addProductToGrid(product) {
-            const productsGrid = document.getElementById('productsGrid');
-            
-             Удаляем сообщение о пустом холодильнике, если оно есть
-            const emptyState = productsGrid.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-            
-            const productCard = document.createElement('div');
-            productCard.className = 'product-card fade-in';
-            productCard.dataset.id = product.id;
-            
-            productCard.innerHTML = `
-                ${product.image  `img src=${product.image} class=product-image alt=${product.name}`  
-                `div class=product-image style=display flex; align-items center; justify-content center; background linear-gradient(135deg, #333, #444);
-                    i class=fas fa-image style=font-size 48px; color #666;i
-                div`}
-                div class=product-info
-                    div class=product-name${product.name}div
-                    div class=product-quantity
-                        div class=quantity-controls
-                            button class=quantity-btn onclick=changeQuantity(${product.id}, -1)
-                                i class=fas fa-minusi
-                            button
-                            span class=quantity-value${product.quantity}span
-                            button class=quantity-btn onclick=changeQuantity(${product.id}, 1)
-                                i class=fas fa-plusi
-                            button
-                        div
-                        div class=product-actions
-                            button class=delete-btn onclick=deleteProduct(${product.id})
-                                i class=fas fa-trashi Удалить
-                            button
-                        div
-                    div
-                div
-            `;
-            
-            productsGrid.appendChild(productCard);
-        }
-        
-        function changeQuantity(productId, change) {
-            const products = JSON.parse(localStorage.getItem('fridgeProducts'))  [];
-            const productIndex = products.findIndex(p = p.id === productId);
-            
-            if (productIndex !== -1) {
-                products[productIndex].quantity += change;
-                
-                 Если количество стало 0 или меньше, удаляем продукт
-                if (products[productIndex].quantity = 0) {
-                    products.splice(productIndex, 1);
-                }
-                
-                 Сохраняем изменения
-                localStorage.setItem('fridgeProducts', JSON.stringify(products));
-                
-                 Перезагружаем список продуктов
-                loadProducts();
-            }
-        }
-        
-        function deleteProduct(productId) {
-            if (confirm('Вы уверены, что хотите удалить этот продукт')) {
-                const products = JSON.parse(localStorage.getItem('fridgeProducts'))  [];
-                const updatedProducts = products.filter(p = p.id !== productId);
-                
-                localStorage.setItem('fridgeProducts', JSON.stringify(updatedProducts));
-                loadProducts();
-            }
-        }
-        
-        function updateStats() {
-            const products = JSON.parse(localStorage.getItem('fridgeProducts'))  [];
-            
-             Общее количество продуктов
-            document.getElementById('totalProducts').textContent = products.length;
-            document.getElementById('cardTotal').textContent = products.length;
-            
-             Общее количество единиц продуктов
-            const totalQuantity = products.reduce((sum, product) = sum + product.quantity, 0);
-            document.getElementById('totalQuantity').textContent = totalQuantity;
-            
-             Количество продуктов с малым запасом (меньше 3)
-            const lowStockCount = products.filter(product = product.quantity  3).length;
-            document.getElementById('lowStock').textContent = lowStockCount;
-            document.getElementById('cardLow').textContent = lowStockCount;
-            
-             Количество категорий (уникальных названий)
-            const categories = [...new Set(products.map(product = product.name))].length;
-            document.getElementById('cardCategories').textContent = categories;
-            
-             Количество добавленных сегодня продуктов
-            const today = new Date().toISOString().split('T')[0];
-            const addedToday = products.filter(product = 
-                product.dateAdded && product.dateAdded.startsWith(today)
-            ).length;
-            document.getElementById('cardAdded').textContent = addedToday;
-        }
-        
-        function showSuccessAnimation() {
-            const button = document.querySelector('.btn-primary');
-            const originalText = button.innerHTML;
-            
-            button.innerHTML = 'i class=fas fa-checki Добавлено!';
-            button.style.background = 'linear-gradient(135deg, #2dcc70, #27ae60)';
-            
-            setTimeout(() = {
-                button.innerHTML = originalText;
-                button.style.background = 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))';
-            }, 2000);
-        }
     </script>
 </body>
-
 </html>
