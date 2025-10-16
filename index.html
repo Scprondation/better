@@ -26,6 +26,9 @@
             --radius-lg: 20px;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --background-image: none;
+            --background-blur: 0px;
+            --background-brightness: 100%;
         }
 
         * {
@@ -41,6 +44,22 @@
             min-height: 100vh;
             line-height: 1.6;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--background-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(var(--background-blur)) brightness(var(--background-brightness));
+            z-index: -1;
         }
 
         .container {
@@ -49,19 +68,21 @@
         }
 
         header {
-            background: var(--bg-secondary);
+            background: rgba(26, 26, 26, 0.8);
             padding: 20px;
             border-radius: var(--radius-lg);
             margin-bottom: 30px;
             text-align: center;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .logo {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
-            margin-bottom: 10px;
         }
 
         .logo-icon {
@@ -83,6 +104,192 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .settings-btn {
+            background: var(--bg-tertiary);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            font-size: 22px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .settings-btn:hover {
+            background: var(--accent-primary);
+            transform: rotate(30deg);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100vh;
+            background: var(--bg-elevated);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            transition: var(--transition);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .settings-panel.active {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .close-settings:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .color-option.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .custom-color {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .custom-color-input {
+            flex: 1;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            padding: 0 10px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .background-upload {
+            margin-top: 16px;
+        }
+
+        .upload-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .upload-btn:hover {
+            background: var(--accent-primary);
+        }
+
+        .background-preview {
+            margin-top: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 150px;
+            display: none;
+        }
+
+        .background-preview img, .background-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slider-container {
+            margin-top: 16px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
         .status {
             color: var(--text-secondary);
             font-size: 14px;
@@ -95,10 +302,11 @@
         }
 
         .add-product-section, .products-section, .sidebar-section {
-            background: var(--bg-elevated);
+            background: rgba(51, 51, 51, 0.8);
             border-radius: var(--radius-lg);
             padding: 24px;
             box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
         }
 
         .section-title {
@@ -336,16 +544,80 @@
             .main-content {
                 grid-template-columns: 1fr;
             }
+            
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
         }
 
         @media (max-width: 768px) {
             .products-grid {
                 grid-template-columns: 1fr;
             }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2 class="settings-title">Настройки дизайна</h2>
+            <button class="close-settings" id="closeSettings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="settings-group">
+            <h3 class="settings-label">Цветовая схема</h3>
+            <div class="color-picker">
+                <div class="color-option active" style="background: #4a7cff;" data-color="#4a7cff"></div>
+                <div class="color-option" style="background: #2dcc70;" data-color="#2dcc70"></div>
+                <div class="color-option" style="background: #e74c3c;" data-color="#e74c3c"></div>
+                <div class="color-option" style="background: #f1c40f;" data-color="#f1c40f"></div>
+                <div class="color-option" style="background: #9b59b6;" data-color="#9b59b6"></div>
+            </div>
+            <div class="custom-color">
+                <input type="color" id="customColor" class="custom-color-input">
+                <label for="customColor">Свой цвет</label>
+            </div>
+        </div>
+        
+        <div class="settings-group">
+            <h3 class="settings-label">Фон сайта</h3>
+            <div class="background-upload">
+                <input type="file" id="backgroundUpload" accept="image/*,video/*" style="display: none;">
+                <button class="upload-btn" id="uploadBackgroundBtn">
+                    <i class="fas fa-upload"></i> Загрузить фон
+                </button>
+                <div class="background-preview" id="backgroundPreview">
+                    <!-- Preview will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="slider-container">
+                <label class="settings-label">Размытие фона</label>
+                <input type="range" min="0" max="20" value="0" class="slider" id="blurSlider">
+                <div class="slider-value" id="blurValue">0px</div>
+            </div>
+            
+            <div class="slider-container">
+                <label class="settings-label">Яркость фона</label>
+                <input type="range" min="10" max="100" value="100" class="slider" id="brightnessSlider">
+                <div class="slider-value" id="brightnessValue">100%</div>
+            </div>
+            
+            <button class="upload-btn" id="resetBackground" style="margin-top: 16px;">
+                <i class="fas fa-times"></i> Сбросить фон
+            </button>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <div class="logo">
@@ -354,7 +626,11 @@
                 </div>
                 <div class="logo-text">Общий Холодильник</div>
             </div>
-            <div class="status" id="connectionStatus">🔄 Подключение к базе...</div>
+            <div class="header-actions">
+                <button class="settings-btn" id="settingsToggle">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
         </header>
 
         <div class="main-content">
@@ -460,7 +736,7 @@
                         ✅ Общий холодильник для всех<br>
                         📱 Работает на любом устройстве<br>
                         🌐 Данные сохраняются в Firebase<br>
-                        🔄 Изменения видны сразу у всех
+                        🎨 Кастомизация в настройках
                     </p>
                 </div>
             </div>
@@ -483,7 +759,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Загрузка продуктов (ВСЕХ продуктов без фильтрации по пользователю)
+        // Загрузка продуктов
         function loadProducts() {
             console.log("🔄 Начинаем загрузку продуктов...");
             
@@ -505,7 +781,6 @@
                             </div>
                         `;
                         updateStats([]);
-                        document.getElementById('connectionStatus').innerHTML = "✅ Подключено • Холодильник пуст";
                         return;
                     }
 
@@ -527,10 +802,8 @@
 
                     console.log("✅ Продукты отображены:", products.length);
                     updateStats(products);
-                    document.getElementById('connectionStatus').innerHTML = `✅ Подключено • ${products.length} продуктов`;
                 }, (error) => {
                     console.error("❌ Ошибка загрузки:", error);
-                    document.getElementById('connectionStatus').innerHTML = "❌ Ошибка подключения";
                     showMessage("❌ Ошибка загрузки продуктов: " + error.message, "error");
                 });
         }
@@ -538,7 +811,6 @@
         function addProductToGrid(product) {
             const productsGrid = document.getElementById('productsGrid');
             
-            // Убираем сообщение о пустом холодильнике
             const emptyState = productsGrid.querySelector('.empty-state');
             if (emptyState) {
                 emptyState.remove();
@@ -700,11 +972,190 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // Загружаем продукты при запуске
-        window.addEventListener('load', function() {
-            console.log("🚀 Запуск приложения...");
+        // Кастомизация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserSettings();
             loadProducts();
+            
+            // Настройки панели
+            document.getElementById('settingsToggle').addEventListener('click', function() {
+                document.getElementById('settingsPanel').classList.add('active');
+            });
+            
+            document.getElementById('closeSettings').addEventListener('click', function() {
+                document.getElementById('settingsPanel').classList.remove('active');
+            });
+            
+            // Выбор цвета
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.color-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const color = this.getAttribute('data-color');
+                    applyColorScheme(color);
+                    saveUserSettings();
+                });
+            });
+            
+            // Пользовательский выбор цвета
+            document.getElementById('customColor').addEventListener('input', function() {
+                const color = this.value;
+                applyColorScheme(color);
+                saveUserSettings();
+            });
+            
+            // Загрузка фона
+            document.getElementById('uploadBackgroundBtn').addEventListener('click', function() {
+                document.getElementById('backgroundUpload').click();
+            });
+            
+            document.getElementById('backgroundUpload').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('backgroundPreview');
+                        const url = e.target.result;
+                        
+                        if (file.type.startsWith('image/')) {
+                            preview.innerHTML = `<img src="${url}" alt="Background Preview">`;
+                        } else if (file.type.startsWith('video/')) {
+                            preview.innerHTML = `<video autoplay muted loop><source src="${url}" type="${file.type}"></video>`;
+                        }
+                        
+                        preview.style.display = 'block';
+                        
+                        const settings = getUserSettings();
+                        settings.background = url;
+                        settings.backgroundType = file.type.startsWith('video/') ? 'video' : 'image';
+                        localStorage.setItem('userSettings', JSON.stringify(settings));
+                        
+                        applyUserSettings(settings);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Слайдеры
+            document.getElementById('blurSlider').addEventListener('input', function() {
+                const value = this.value + 'px';
+                document.getElementById('blurValue').textContent = value;
+                document.documentElement.style.setProperty('--background-blur', value);
+                
+                const settings = getUserSettings();
+                settings.backgroundBlur = value;
+                localStorage.setItem('userSettings', JSON.stringify(settings));
+            });
+            
+            document.getElementById('brightnessSlider').addEventListener('input', function() {
+                const value = this.value + '%';
+                document.getElementById('brightnessValue').textContent = value;
+                document.documentElement.style.setProperty('--background-brightness', value);
+                
+                const settings = getUserSettings();
+                settings.backgroundBrightness = value;
+                localStorage.setItem('userSettings', JSON.stringify(settings));
+            });
+            
+            // Сброс фона
+            document.getElementById('resetBackground').addEventListener('click', function() {
+                const settings = getUserSettings();
+                settings.background = '';
+                settings.backgroundType = '';
+                localStorage.setItem('userSettings', JSON.stringify(settings));
+                
+                document.getElementById('backgroundPreview').style.display = 'none';
+                document.getElementById('backgroundPreview').innerHTML = '';
+                document.documentElement.style.setProperty('--background-image', 'none');
+            });
         });
+
+        // Функции для работы с настройками
+        function getUserSettings() {
+            return JSON.parse(localStorage.getItem('userSettings')) || {};
+        }
+        
+        function saveUserSettings() {
+            const settings = getUserSettings();
+            
+            const activeColor = document.querySelector('.color-option.active');
+            if (activeColor) {
+                settings.color = activeColor.getAttribute('data-color');
+            }
+            
+            const customColor = document.getElementById('customColor').value;
+            if (customColor && customColor !== '#000000') {
+                settings.customColor = customColor;
+            }
+            
+            localStorage.setItem('userSettings', JSON.stringify(settings));
+        }
+        
+        function loadUserSettings() {
+            const settings = getUserSettings();
+            applyUserSettings(settings);
+        }
+        
+        function applyUserSettings(settings) {
+            if (settings.color) {
+                applyColorScheme(settings.color);
+                
+                document.querySelectorAll('.color-option').forEach(option => {
+                    if (option.getAttribute('data-color') === settings.color) {
+                        option.classList.add('active');
+                    } else {
+                        option.classList.remove('active');
+                    }
+                });
+            } else if (settings.customColor) {
+                applyColorScheme(settings.customColor);
+                document.getElementById('customColor').value = settings.customColor;
+            }
+            
+            if (settings.background) {
+                document.documentElement.style.setProperty('--background-image', `url(${settings.background})`);
+                
+                const preview = document.getElementById('backgroundPreview');
+                if (settings.backgroundType === 'video') {
+                    preview.innerHTML = `<video autoplay muted loop><source src="${settings.background}"></video>`;
+                } else {
+                    preview.innerHTML = `<img src="${settings.background}" alt="Background Preview">`;
+                }
+                preview.style.display = 'block';
+            }
+            
+            if (settings.backgroundBlur) {
+                document.documentElement.style.setProperty('--background-blur', settings.backgroundBlur);
+                document.getElementById('blurSlider').value = parseInt(settings.backgroundBlur);
+                document.getElementById('blurValue').textContent = settings.backgroundBlur;
+            }
+            
+            if (settings.backgroundBrightness) {
+                document.documentElement.style.setProperty('--background-brightness', settings.backgroundBrightness);
+                document.getElementById('brightnessSlider').value = parseInt(settings.backgroundBrightness);
+                document.getElementById('brightnessValue').textContent = settings.backgroundBrightness;
+            }
+        }
+        
+        function applyColorScheme(color) {
+            document.documentElement.style.setProperty('--accent-primary', color);
+            
+            const hex = color.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            const lighterR = Math.min(255, r + 40);
+            const lighterG = Math.min(255, g + 40);
+            const lighterB = Math.min(255, b + 40);
+            
+            const lighterColor = `#${lighterR.toString(16).padStart(2, '0')}${lighterG.toString(16).padStart(2, '0')}${lighterB.toString(16).padStart(2, '0')}`;
+            
+            document.documentElement.style.setProperty('--accent-secondary', lighterColor);
+        }
     </script>
 </body>
 </html>
