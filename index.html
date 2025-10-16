@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Холодильник</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-refrigerator"></i>
+                    </div>
+                    <div class="logo-text">Холодильник</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalProducts">0</div>
+                        <div class="stat-label">Продуктов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalQuantity">0</div>
+                        <div class="stat-label">Всего шт.</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="lowStock">0</div>
+                        <div class="stat-label">Заканчивается</div>
+                    </div>
+                </div>
+                <button class="settings-btn" id="settingsToggle">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2 class="settings-title">Настройки</h2>
+            <button class="close-settings" id="closeSettings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="settings-group">
+            <h3 class="settings-label">Цветовая схема</h3>
+            <div class="color-picker">
+                <div class="color-option active" style="background: #4a7cff;" data-color="#4a7cff"></div>
+                <div class="color-option" style="background: #2dcc70;" data-color="#2dcc70"></div>
+                <div class="color-option" style="background: #e74c3c;" data-color="#e74c3c"></div>
+                <div class="color-option" style="background: #f1c40f;" data-color="#f1c40f"></div>
+                <div class="color-option" style="background: #9b59b6;" data-color="#9b59b6"></div>
+            </div>
+            <div class="custom-color">
+                <input type="color" id="customColor" class="custom-color-input">
+                <label for="customColor">Свой цвет</label>
+            </div>
+        </div>
+        
+        <div class="settings-group">
+            <h3 class="settings-label">Фон сайта</h3>
+            <div class="background-upload">
+                <input type="file" id="backgroundUpload" accept="image/*,video/*" style="display: none;">
+                <button class="upload-btn" id="uploadBackgroundBtn">
+                    <i class="fas fa-upload"></i> Загрузить фон
+                </button>
+                <div class="background-preview" id="backgroundPreview">
+                    <!-- Preview will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="slider-container">
+                <label class="settings-label">Размытие фона</label>
+                <input type="range" min="0" max="20" value="0" class="slider" id="blurSlider">
+                <div class="slider-value" id="blurValue">0px</div>
+            </div>
+            
+            <div class="slider-container">
+                <label class="settings-label">Яркость фона</label>
+                <input type="range" min="10" max="100" value="100" class="slider" id="brightnessSlider">
+                <div class="slider-value" id="brightnessValue">100%</div>
+            </div>
+            
+            <button class="upload-btn" id="resetBackground" style="margin-top: 16px;">
+                <i class="fas fa-times"></i> Сбросить фон
+            </button>
+        </div>
+        
+        <div class="settings-group">
+            <h3 class="settings-label">Инструкция по хостингу</h3>
+            <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5;">
+                Чтобы другие пользователи в вашей сети могли зайти на сайт:
+                <br><br>
+                1. Узнайте IP-адрес вашего компьютера в сети
+                <br>
+                2. Запустите сайт с помощью локального сервера
+                <br>
+                3. Другие пользователи откройте в браузере:
+                <br>
+                <strong>http://[ВАШ_IP]:8000</strong>
+                <br><br>
+                <button class="upload-btn" id="showHostingHelp">
+                    <i class="fas fa-info-circle"></i> Подробная инструкция
+                </button>
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="content-main">
+                <section class="add-product-section fade-in">
+                    <h2 class="section-title"><i class="fas fa-plus-circle"></i> Добавить продукт</h2>
+                    <form id="productForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="productName">Название продукта</label>
+                                <input type="text" id="productName" placeholder="Например: Молоко" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="productQuantity">Количество</label>
+                                <input type="number" id="productQuantity" value="1" min="1" required>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="productImage">Изображение продукта</label>
+                                <input type="file" id="productImage" accept="image/*">
+                                <div class="image-preview-container">
+                                    <img id="imagePreview" class="image-preview" src="" alt="Предпросмотр">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i> Добавить продукт
+                        </button>
+                    </form>
+                </section>
+                
+                <section class="products-section fade-in">
+                    <h2 class="section-title"><i class="fas fa-boxes"></i> Мои продукты</h2>
+                    <div class="products-grid" id="productsGrid">
+                        <!-- Продукты будут добавляться сюда -->
+                    </div>
+                </section>
+            </div>
+            
+            <div class="sidebar">
+                <div class="stats-card fade-in">
+                    <h2 class="section-title"><i class="fas fa-chart-pie"></i> Статистика</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="cardTotal">0</div>
+                            <div class="stat-card-label">Всего продуктов</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="cardLow">0</div>
+                            <div class="stat-card-label">Мало осталось</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="cardCategories">0</div>
+                            <div class="stat-card-label">Категории</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-value" id="cardAdded">0</div>
+                            <div class="stat-card-label">Добавлено сегодня</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quick-actions fade-in">
+                    <h2 class="section-title"><i class="fas fa-bolt"></i> Быстрые действия</h2>
+                    <div class="quick-actions-grid">
+                        <div class="action-btn" onclick="addQuickProduct('Молоко')">
+                            <i class="fas fa-wine-bottle action-icon"></i>
+                            <div class="action-label">Молоко</div>
+                        </div>
+                        <div class="action-btn" onclick="addQuickProduct('Яйца')">
+                            <i class="fas fa-egg action-icon"></i>
+                            <div class="action-label">Яйца</div>
+                        </div>
+                        <div class="action-btn" onclick="addQuickProduct('Хлеб')">
+                            <i class="fas fa-bread-slice action-icon"></i>
+                            <div class="action-label">Хлеб</div>
+                        </div>
+                        <div class="action-btn" onclick="addQuickProduct('Сыр')">
+                            <i class="fas fa-cheese action-icon"></i>
+                            <div class="action-label">Сыр</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
